@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import AddLinkIcon from "@mui/icons-material/AddLink";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { usePublicBlocks, usePublicPage } from "../../features/public/publicQueries";
 import { useBlocks, useCreateBlock } from "../../features/blocks/blocksQueries";
 import LinkCard from "../../features/blocks/LinkCard";
@@ -23,6 +23,41 @@ const gridSx = {
   gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
   gap: 2,
 };
+
+// Anonymous visitors land on a shared page with no app chrome at all — this is
+// their only way to discover that "Save The Link" is a real product they can
+// sign up for, rather than a dead end.
+const GuestBanner = () => (
+  <Stack
+    direction="row"
+    sx={{
+      position: "sticky",
+      top: 0,
+      zIndex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      flexWrap: "wrap",
+      gap: 1.5,
+      px: 3,
+      py: 1.25,
+      bgcolor: "background.paper",
+      borderBottom: 1,
+      borderColor: "divider",
+    }}
+  >
+    <Typography variant="body2" color="text.secondary">
+      Save The Link — create a free account to organize and save your own links.
+    </Typography>
+    <Stack direction="row" sx={{ gap: 1 }}>
+      <Button component={Link} to="/login" size="small">
+        Sign in
+      </Button>
+      <Button component={Link} to="/register" variant="contained" size="small">
+        Create account
+      </Button>
+    </Stack>
+  </Stack>
+);
 
 const PublicPageScreen = () => {
   const { slug } = useParams();
@@ -68,13 +103,16 @@ const PublicPageScreen = () => {
 
   if (isError || !page) {
     return (
-      <Box sx={{ maxWidth: 480, mx: "auto", px: 4, py: 10, textAlign: "center" }}>
-        <Typography variant="h6" gutterBottom>
-          This page isn't available
-        </Typography>
-        <Typography color="text.secondary">
-          The link may have been unpublished, or it never existed.
-        </Typography>
+      <Box>
+        {!isLoggedIn && <GuestBanner />}
+        <Box sx={{ maxWidth: 480, mx: "auto", px: 4, py: 10, textAlign: "center" }}>
+          <Typography variant="h6" gutterBottom>
+            This page isn't available
+          </Typography>
+          <Typography color="text.secondary">
+            The link may have been unpublished, or it never existed.
+          </Typography>
+        </Box>
       </Box>
     );
   }
@@ -83,6 +121,7 @@ const PublicPageScreen = () => {
 
   return (
     <Box sx={(theme) => ({ minHeight: "100dvh", ...dotGridSx(theme) })}>
+      {!isLoggedIn && <GuestBanner />}
       <Box sx={{ maxWidth: 960, mx: "auto", px: 4, py: 6 }}>
         <Typography variant="h4" sx={{ fontWeight: 700 }}>
           {page.title || "Untitled"}
