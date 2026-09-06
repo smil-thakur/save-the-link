@@ -1,0 +1,135 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as pagesApi from "../../api/pages";
+import type { UpdatePageInput } from "../../models/page";
+import { useToast } from "../../context/toastContext";
+import { getErrorMessage } from "../../lib/getErrorMessage";
+
+export const pagesQueryKey = ["pages"] as const;
+
+export const usePages = () =>
+  useQuery({
+    queryKey: pagesQueryKey,
+    queryFn: () => pagesApi.listPages().then((response) => response.data),
+  });
+
+export const usePage = (id: string | undefined) =>
+  useQuery({
+    queryKey: [...pagesQueryKey, id],
+    queryFn: () => pagesApi.getPage(id!).then((response) => response.data),
+    enabled: id !== undefined,
+  });
+
+export const useCreatePage = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      title,
+      parentPageId,
+    }: {
+      title: string;
+      parentPageId?: string;
+    }) => pagesApi.createPage(title, parentPageId).then((response) => response.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: pagesQueryKey }),
+    onError: (error) =>
+      showToast(getErrorMessage(error, "Couldn't create the page."), "error"),
+  });
+};
+
+export const useUpdatePage = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: UpdatePageInput }) =>
+      pagesApi.updatePage(id, updates).then((response) => response.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: pagesQueryKey }),
+    onError: (error) =>
+      showToast(getErrorMessage(error, "Couldn't save that change."), "error"),
+  });
+};
+
+export const useDeletePage = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string) => pagesApi.deletePage(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: pagesQueryKey });
+      queryClient.invalidateQueries({ queryKey: trashQueryKey });
+      showToast("Page deleted");
+    },
+    onError: (error) =>
+      showToast(getErrorMessage(error, "Couldn't delete the page."), "error"),
+  });
+};
+
+export const trashQueryKey = ["trash"] as const;
+
+export const useTrash = (enabled = true) =>
+  useQuery({
+    queryKey: trashQueryKey,
+    queryFn: () => pagesApi.getTrash().then((response) => response.data),
+    enabled,
+  });
+
+export const useRestorePage = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string) => pagesApi.restorePage(id).then((response) => response.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: pagesQueryKey });
+      queryClient.invalidateQueries({ queryKey: trashQueryKey });
+      showToast("Page restored");
+    },
+    onError: (error) =>
+      showToast(getErrorMessage(error, "Couldn't restore the page."), "error"),
+  });
+};
+
+export const usePermanentlyDeletePage = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string) => pagesApi.permanentlyDeletePage(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: trashQueryKey });
+      showToast("Page permanently deleted");
+    },
+    onError: (error) =>
+      showToast(getErrorMessage(error, "Couldn't delete the page."), "error"),
+  });
+};
+
+export const usePublishPage = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, collaboration }: { id: string; collaboration: "view" | "edit" }) =>
+      pagesApi.publishPage(id, collaboration).then((response) => response.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: pagesQueryKey }),
+    onError: (error) =>
+      showToast(getErrorMessage(error, "Couldn't publish the page."), "error"),
+  });
+};
+
+export const useUnpublishPage = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string) => pagesApi.unpublishPage(id).then((response) => response.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: pagesQueryKey });
+      showToast("Page is private again");
+    },
+    onError: (error) =>
+      showToast(getErrorMessage(error, "Couldn't unpublish the page."), "error"),
+  });
+};

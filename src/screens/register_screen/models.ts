@@ -3,7 +3,3 @@ export interface RegisterBodyType {
   email: string;
   password: string;
 }
-
-export interface RegisterErrorResponse {
-  message: string;
-}

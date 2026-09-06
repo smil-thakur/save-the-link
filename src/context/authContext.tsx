@@ -5,8 +5,9 @@ import React, {
   useState,
   type ReactNode,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { User } from "../models/user";
-import { GetMe } from "./api";
+import { GetMe, LogoutRequest } from "./api";
 
 interface AuthContextType {
   user: User | null;
@@ -25,6 +26,7 @@ interface AuthProviderProps {
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   const login = (user: User) => {
     setUser(user);
@@ -32,6 +34,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     setUser(null);
+    queryClient.clear();
+    LogoutRequest().catch(() => {});
   };
 
   useEffect(() => {

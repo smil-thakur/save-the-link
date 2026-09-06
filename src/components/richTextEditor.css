@@ -1,0 +1,64 @@
+.rte-wrapper .ql-toolbar.ql-snow {
+  border-color: var(--rte-border);
+  background: var(--rte-toolbar-bg);
+  border-radius: 10px 10px 0 0;
+}
+
+.rte-wrapper .ql-container.ql-snow {
+  border-color: var(--rte-border);
+  border-radius: 0 0 10px 10px;
+  background: var(--rte-editor-bg);
+}
+
+.rte-wrapper .ql-editor {
+  min-height: 120px;
+  color: var(--rte-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.rte-wrapper .ql-editor p {
+  margin: 0 0 0.5em;
+}
+
+.rte-wrapper .ql-editor.ql-blank::before {
+  color: var(--rte-placeholder);
+  font-style: normal;
+}
+
+.rte-wrapper .ql-snow .ql-stroke {
+  stroke: var(--rte-icon);
+}
+
+.rte-wrapper .ql-snow .ql-fill {
+  fill: var(--rte-icon);
+}
+
+.rte-wrapper .ql-snow .ql-picker {
+  color: var(--rte-icon);
+}
+
+.rte-wrapper .ql-snow .ql-picker-options {
+  background: var(--rte-toolbar-bg);
+  border-color: var(--rte-border);
+}
+
+.rte-wrapper .ql-snow.ql-toolbar button:hover,
+.rte-wrapper .ql-snow .ql-toolbar button:hover,
+.rte-wrapper .ql-snow.ql-toolbar button.ql-active,
+.rte-wrapper .ql-snow .ql-toolbar button.ql-active,
+.rte-wrapper .ql-snow .ql-picker-label:hover,
+.rte-wrapper .ql-snow .ql-picker-item:hover {
+  color: var(--rte-accent);
+}
+
+.rte-wrapper .ql-snow.ql-toolbar button:hover .ql-stroke,
+.rte-wrapper .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.rte-wrapper .ql-snow .ql-picker-label:hover .ql-stroke {
+  stroke: var(--rte-accent);
+}
+
+.rte-wrapper .ql-snow.ql-toolbar button:hover .ql-fill,
+.rte-wrapper .ql-snow.ql-toolbar button.ql-active .ql-fill {
+  fill: var(--rte-accent);
+}
