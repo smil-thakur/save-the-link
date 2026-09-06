@@ -1,0 +1,4 @@
+export const server_host = import.meta.env.VITE_SERVER_HOST;
+export const registerUser = server_host + "/register";
+export const loginUser = server_host + "/login";
+export const meUser = server_host + "/me";
