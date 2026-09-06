@@ -6,10 +6,11 @@ import { getErrorMessage } from "../../lib/getErrorMessage";
 
 export const pagesQueryKey = ["pages"] as const;
 
-export const usePages = () =>
+export const usePages = (enabled = true) =>
   useQuery({
     queryKey: pagesQueryKey,
     queryFn: () => pagesApi.listPages().then((response) => response.data),
+    enabled,
   });
 
 export const usePage = (id: string | undefined) =>
@@ -142,6 +143,45 @@ export const useSetCollaborators = () => {
     },
     onError: (error) =>
       showToast(getErrorMessage(error, "Couldn't update collaborators."), "error"),
+  });
+};
+
+export const bookmarksQueryKey = ["bookmarks"] as const;
+
+export const useBookmarks = (enabled = true) =>
+  useQuery({
+    queryKey: bookmarksQueryKey,
+    queryFn: () => pagesApi.getBookmarks().then((response) => response.data),
+    enabled,
+  });
+
+export const useBookmarkPage = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string) => pagesApi.bookmarkPage(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bookmarksQueryKey });
+      showToast("Bookmarked");
+    },
+    onError: (error) =>
+      showToast(getErrorMessage(error, "Couldn't bookmark this page."), "error"),
+  });
+};
+
+export const useUnbookmarkPage = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string) => pagesApi.unbookmarkPage(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bookmarksQueryKey });
+      showToast("Bookmark removed");
+    },
+    onError: (error) =>
+      showToast(getErrorMessage(error, "Couldn't remove that bookmark."), "error"),
   });
 };
 

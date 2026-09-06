@@ -5,6 +5,7 @@ import {
   Drawer,
   IconButton,
   List,
+  ListItemButton,
   Stack,
   Tooltip,
   Typography,
@@ -20,10 +21,17 @@ import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import BookmarkRemoveIcon from "@mui/icons-material/BookmarkRemove";
+import PublicIcon from "@mui/icons-material/Public";
 import { useNavigate } from "react-router";
 import { useAuth } from "../context/authContext";
 import { useThemeMode } from "../context/themeModeContext";
-import { usePages, useCreatePage } from "../features/pages/pagesQueries";
+import {
+  usePages,
+  useCreatePage,
+  useBookmarks,
+  useUnbookmarkPage,
+} from "../features/pages/pagesQueries";
 import { buildPageTree } from "../features/pages/buildPageTree";
 import PageTreeItem from "../features/pages/PageTreeItem";
 import TrashDialog from "../features/pages/TrashDialog";
@@ -54,6 +62,8 @@ const Sidebar = ({ mobileOpen, onCloseMobile }: SidebarProps) => {
   const { mode, toggleMode } = useThemeMode();
   const { data: pages, isLoading } = usePages();
   const createPage = useCreatePage();
+  const { data: bookmarks } = useBookmarks();
+  const unbookmarkPage = useUnbookmarkPage();
   const [trashOpen, setTrashOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(getInitialCollapsed);
@@ -138,6 +148,47 @@ const Sidebar = ({ mobileOpen, onCloseMobile }: SidebarProps) => {
           </List>
         )}
       </Box>
+
+      {bookmarks && bookmarks.length > 0 && (
+        <>
+          <Divider />
+          <Box sx={{ maxHeight: 200, overflowY: "auto", py: 1 }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ px: 2, py: 0.5, display: "block", fontWeight: 600, letterSpacing: "0.04em" }}
+            >
+              Bookmarked
+            </Typography>
+            <List disablePadding sx={{ px: 1 }}>
+              {bookmarks.map((bookmark) => (
+                <ListItemButton
+                  key={bookmark.id}
+                  onClick={() => navigate(`/p/${bookmark.slug}`)}
+                  sx={{ borderRadius: 1, py: 0.5 }}
+                >
+                  <Box sx={{ width: 20, textAlign: "center", mr: 0.75, flexShrink: 0 }}>
+                    {bookmark.icon ?? <PublicIcon fontSize="small" />}
+                  </Box>
+                  <Typography variant="body2" noWrap sx={{ flex: 1 }}>
+                    {bookmark.title || "Untitled"}
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    aria-label="Remove bookmark"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      unbookmarkPage.mutate(bookmark.id);
+                    }}
+                  >
+                    <BookmarkRemoveIcon fontSize="small" />
+                  </IconButton>
+                </ListItemButton>
+              ))}
+            </List>
+          </Box>
+        </>
+      )}
 
       <Divider />
 

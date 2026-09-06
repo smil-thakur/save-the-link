@@ -9,9 +9,18 @@ import {
   Typography,
 } from "@mui/material";
 import AddLinkIcon from "@mui/icons-material/AddLink";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import { Link, useParams } from "react-router";
 import { usePublicBlocks, usePublicPage } from "../../features/public/publicQueries";
 import { useBlocks, useCreateBlock } from "../../features/blocks/blocksQueries";
+import {
+  useBookmarkPage,
+  useBookmarks,
+  usePages,
+  useUnbookmarkPage,
+} from "../../features/pages/pagesQueries";
 import LinkCard from "../../features/blocks/LinkCard";
 import EditBlockDialog from "../../features/blocks/EditBlockDialog";
 import { useAuth } from "../../context/authContext";
@@ -59,6 +68,65 @@ const GuestBanner = () => (
   </Stack>
 );
 
+// A public page has no sidebar or app chrome of its own — logged-in visitors
+// need a way back to their own workspace, and (for a page they don't own) a
+// way to bookmark it for next time.
+const AuthedVisitorBar = ({
+  canBookmark,
+  isBookmarked,
+  onToggleBookmark,
+  toggling,
+}: {
+  canBookmark: boolean;
+  isBookmarked: boolean;
+  onToggleBookmark: () => void;
+  toggling: boolean;
+}) => (
+  <Stack
+    direction="row"
+    sx={{
+      position: "sticky",
+      top: 0,
+      zIndex: 1,
+      alignItems: "center",
+      justifyContent: "space-between",
+      flexWrap: "wrap",
+      gap: 1.5,
+      px: 3,
+      py: 1.25,
+      bgcolor: "background.paper",
+      borderBottom: 1,
+      borderColor: "divider",
+    }}
+  >
+    <Button
+      component={Link}
+      to="/home"
+      size="small"
+      startIcon={<ArrowBackIcon fontSize="small" />}
+    >
+      Back to my pages
+    </Button>
+    {canBookmark && (
+      <Button
+        size="small"
+        variant={isBookmarked ? "contained" : "outlined"}
+        startIcon={
+          isBookmarked ? (
+            <BookmarkIcon fontSize="small" />
+          ) : (
+            <BookmarkBorderIcon fontSize="small" />
+          )
+        }
+        onClick={onToggleBookmark}
+        disabled={toggling}
+      >
+        {isBookmarked ? "Bookmarked" : "Bookmark"}
+      </Button>
+    )}
+  </Stack>
+);
+
 const PublicPageScreen = () => {
   const { slug } = useParams();
   const { isLoggedIn } = useAuth();
@@ -91,6 +159,31 @@ const PublicPageScreen = () => {
   const [url, setUrl] = useState("");
   const [editingBlock, setEditingBlock] = useState<Block | null>(null);
 
+  // A page you own already lives in your own sidebar — bookmarking is only
+  // offered once we're sure this page isn't one of yours, so it never even
+  // flashes on your own pages while that's being determined.
+  const ownPagesQuery = usePages(isLoggedIn);
+  const isOwnPage = ownPagesQuery.data?.some((owned) => owned.id === page?.id) ?? false;
+  const knowsOwnership = !isLoggedIn || ownPagesQuery.isSuccess;
+  const canBookmark = Boolean(isLoggedIn && knowsOwnership && !isOwnPage && page);
+
+  const bookmarksQuery = useBookmarks(isLoggedIn);
+  const isBookmarked = bookmarksQuery.data?.some((b) => b.id === page?.id) ?? false;
+  const bookmarkPage = useBookmarkPage();
+  const unbookmarkPage = useUnbookmarkPage();
+
+  const handleToggleBookmark = () => {
+    if (!page) {
+      return;
+    }
+
+    if (isBookmarked) {
+      unbookmarkPage.mutate(page.id);
+    } else {
+      bookmarkPage.mutate(page.id);
+    }
+  };
+
   const handleAddLink = (event: FormEvent) => {
     event.preventDefault();
     const trimmed = url.trim();
@@ -113,7 +206,16 @@ const PublicPageScreen = () => {
   if (isError || !page) {
     return (
       <Box>
-        {!isLoggedIn && <GuestBanner />}
+        {isLoggedIn ? (
+          <AuthedVisitorBar
+            canBookmark={false}
+            isBookmarked={false}
+            onToggleBookmark={() => {}}
+            toggling={false}
+          />
+        ) : (
+          <GuestBanner />
+        )}
         <Box sx={{ maxWidth: 480, mx: "auto", px: 4, py: 10, textAlign: "center" }}>
           <Typography variant="h6" gutterBottom>
             This page isn't available
@@ -130,7 +232,16 @@ const PublicPageScreen = () => {
 
   return (
     <Box sx={(theme) => ({ minHeight: "100dvh", ...dotGridSx(theme) })}>
-      {!isLoggedIn && <GuestBanner />}
+      {isLoggedIn ? (
+        <AuthedVisitorBar
+          canBookmark={canBookmark}
+          isBookmarked={isBookmarked}
+          onToggleBookmark={handleToggleBookmark}
+          toggling={bookmarkPage.isPending || unbookmarkPage.isPending}
+        />
+      ) : (
+        <GuestBanner />
+      )}
       <Box sx={{ maxWidth: 960, mx: "auto", px: 4, py: 6 }}>
         <Typography variant="h4" sx={{ fontWeight: 700 }}>
           {page.title || "Untitled"}

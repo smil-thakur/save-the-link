@@ -1,6 +1,7 @@
 import { pagesEndpoint, server_host } from "../constants/apis";
 import { httpClient } from "../lib/httpClient";
 import type { Page, UpdatePageInput } from "../models/page";
+import type { PublicPageSummary } from "../models/publicPage";
 
 export const listPages = () => httpClient.get<Page[]>(pagesEndpoint);
 
@@ -39,3 +40,12 @@ export const restorePage = (id: string) =>
 
 export const permanentlyDeletePage = (id: string) =>
   httpClient.delete(`${pagesEndpoint}/${id}/permanent`);
+
+export const bookmarkPage = (id: string) =>
+  httpClient.post(`${pagesEndpoint}/${id}/bookmark`);
+
+export const unbookmarkPage = (id: string) =>
+  httpClient.delete(`${pagesEndpoint}/${id}/bookmark`);
+
+export const getBookmarks = () =>
+  httpClient.get<PublicPageSummary[]>(`${server_host}/bookmarks`);
