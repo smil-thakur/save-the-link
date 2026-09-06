@@ -139,7 +139,13 @@ const PageEditor = ({ page }: { page: Page }) => {
           {page.visibility === "public" && (
             <Chip
               icon={<PublicIcon />}
-              label={page.collaboration === "edit" ? "Public, anyone can edit" : "Public"}
+              label={
+                page.collaboration === "edit"
+                  ? "Public, anyone can edit"
+                  : page.collaboration === "invite"
+                    ? `Public, shared with ${page.collaboratorEmails?.length ?? 0}`
+                    : "Public"
+              }
               size="small"
               variant="outlined"
             />

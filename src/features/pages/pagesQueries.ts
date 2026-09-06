@@ -111,11 +111,37 @@ export const usePublishPage = () => {
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, collaboration }: { id: string; collaboration: "view" | "edit" }) =>
-      pagesApi.publishPage(id, collaboration).then((response) => response.data),
+    mutationFn: ({
+      id,
+      collaboration,
+    }: {
+      id: string;
+      collaboration: "view" | "edit" | "invite";
+    }) => pagesApi.publishPage(id, collaboration).then((response) => response.data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: pagesQueryKey }),
     onError: (error) =>
       showToast(getErrorMessage(error, "Couldn't publish the page."), "error"),
+  });
+};
+
+export const useSetCollaborators = () => {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, emails }: { id: string; emails: string[] }) =>
+      pagesApi.setCollaborators(id, emails).then((response) => response.data),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: pagesQueryKey });
+      if (result.notFoundEmails && result.notFoundEmails.length > 0) {
+        showToast(
+          `No account found for: ${result.notFoundEmails.join(", ")}`,
+          "info",
+        );
+      }
+    },
+    onError: (error) =>
+      showToast(getErrorMessage(error, "Couldn't update collaborators."), "error"),
   });
 };
 

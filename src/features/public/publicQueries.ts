@@ -15,3 +15,9 @@ export const usePublicBlocks = (slug: string | undefined) =>
     queryFn: () => publicApi.getPublicBlocks(slug!).then((response) => response.data),
     enabled: slug !== undefined,
   });
+
+export const usePublicPagesList = () =>
+  useQuery({
+    queryKey: ["public-pages-list"],
+    queryFn: () => publicApi.listPublicPages().then((response) => response.data),
+  });

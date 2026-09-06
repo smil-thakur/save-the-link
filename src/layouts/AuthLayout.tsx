@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 import { dotGridSx } from "../theme/texture";
+import ExplorePublicPages from "../features/public/ExplorePublicPages";
 
 interface AuthLayoutProps {
   title: string;
@@ -15,6 +16,7 @@ const AuthLayout = ({ title, subtitle, children, footer }: AuthLayoutProps) => {
       sx={(theme) => ({
         minHeight: "100dvh",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         px: 3,
@@ -40,6 +42,8 @@ const AuthLayout = ({ title, subtitle, children, footer }: AuthLayoutProps) => {
 
         <Box sx={{ mt: 3, textAlign: "center" }}>{footer}</Box>
       </Box>
+
+      <ExplorePublicPages />
     </Box>
   );
 };

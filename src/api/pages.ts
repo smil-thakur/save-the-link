@@ -16,8 +16,18 @@ export const updatePage = (id: string, updates: UpdatePageInput) =>
 export const deletePage = (id: string) =>
   httpClient.delete(`${pagesEndpoint}/${id}`);
 
-export const publishPage = (id: string, collaboration: "view" | "edit") =>
+export const publishPage = (id: string, collaboration: "view" | "edit" | "invite") =>
   httpClient.post<Page>(`${pagesEndpoint}/${id}/publish`, { collaboration });
+
+export interface SetCollaboratorsResult {
+  page: Page;
+  notFoundEmails?: string[];
+}
+
+export const setCollaborators = (id: string, emails: string[]) =>
+  httpClient.patch<SetCollaboratorsResult>(`${pagesEndpoint}/${id}/collaborators`, {
+    emails,
+  });
 
 export const unpublishPage = (id: string) =>
   httpClient.post<Page>(`${pagesEndpoint}/${id}/unpublish`);

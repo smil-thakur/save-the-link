@@ -64,19 +64,28 @@ const PublicPageScreen = () => {
   const { isLoggedIn } = useAuth();
   const { data: page, isLoading: pageLoading, isError } = usePublicPage(slug);
 
-  const canEdit = Boolean(isLoggedIn && page?.collaboration === "edit");
+  // "edit" = anyone with the link may be a collaborator; "invite" = only
+  // specific people are — and the frontend isn't told who (that list is
+  // private to the owner), so it can't precompute the answer. It has to
+  // actually attempt the authenticated path and let the backend's real
+  // authorization check decide, falling back to read-only if that's rejected.
+  const mightEdit = Boolean(
+    isLoggedIn && (page?.collaboration === "edit" || page?.collaboration === "invite"),
+  );
+  const authedBlocksQuery = useBlocks(mightEdit ? page?.id : undefined);
+  const canEdit = mightEdit && authedBlocksQuery.isSuccess;
 
-  // Anonymous / view-only visitors read through the public, unauthenticated endpoint.
+  // Anonymous / view-only / not-actually-invited visitors read through the
+  // public, unauthenticated endpoint — including during the brief window
+  // before we know whether the authenticated attempt above will succeed.
   const publicBlocksQuery = usePublicBlocks(canEdit ? undefined : slug);
-  // A logged-in collaborator on an edit-enabled page uses the same authenticated
-  // hooks as the private editor — the backend now permits any logged-in user on a
-  // public+edit page, not just the owner.
-  const authedBlocksQuery = useBlocks(canEdit ? page?.id : undefined);
 
   const blocks = canEdit ? authedBlocksQuery.data : publicBlocksQuery.data;
   const blocksLoading = canEdit
     ? authedBlocksQuery.isLoading
-    : publicBlocksQuery.isLoading;
+    : mightEdit && !authedBlocksQuery.isError
+      ? true
+      : publicBlocksQuery.isLoading;
 
   const createBlock = useCreateBlock(page?.id ?? "");
   const [url, setUrl] = useState("");
