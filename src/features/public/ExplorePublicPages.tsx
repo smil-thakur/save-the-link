@@ -61,7 +61,8 @@ const ExplorePublicPages = () => {
         aria-label="Public page collections"
         sx={{
           gap: 1.25,
-          maskImage: "linear-gradient(to right, transparent, black 5%, black 95%, transparent)",
+          maskImage:
+            "linear-gradient(to right, transparent, black 5%, black 95%, transparent)",
           "@keyframes public-pages-marquee": {
             from: { transform: "translateX(0)" },
             to: { transform: "translateX(-50%)" },
@@ -80,9 +81,10 @@ const ExplorePublicPages = () => {
             key={rowIndex}
             sx={{
               overflow: "hidden",
-              "&:hover .public-pages-track, &:focus-within .public-pages-track": {
-                animationPlayState: "paused",
-              },
+              "&:hover .public-pages-track, &:focus-within .public-pages-track":
+                {
+                  animationPlayState: "paused",
+                },
             }}
           >
             <Box
@@ -124,7 +126,8 @@ const ExplorePublicPages = () => {
                         border: 1,
                         borderColor: "divider",
                         boxShadow: "0 4px 16px rgba(20, 22, 28, 0.06)",
-                        transition: "border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease",
+                        transition:
+                          "border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease",
                         "&:hover": {
                           borderColor: "primary.main",
                           boxShadow: "0 8px 24px rgba(36, 82, 224, 0.16)",
